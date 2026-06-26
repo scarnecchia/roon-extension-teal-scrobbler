@@ -83,25 +83,27 @@ class TealRateLimitError extends TealSubmissionError {
 /**
  * Generate an AT Protocol TID (timestamp-based identifier).
  *
- * A TID encodes the current time in microseconds as 10 base32 characters
- * (using the custom alphabet) followed by 2 random base32 characters for
- * collision avoidance within the same microsecond.
+ * Layout of the 64-bit integer (big-endian):
+ *   bit 63      : always 0
+ *   bits 62–10  : microseconds since UNIX epoch (53 bits)
+ *   bits 9–0    : random clock identifier (10 bits)
  *
- * @returns {string} A 12-character TID.
+ * Encoded as 13 base32-sortable characters.
+ *
+ * @returns {string} A 13-character TID.
  */
 function generateTid() {
-    const now = Date.now();
-    let str = "";
-    let ts = now * 1000; // microseconds since epoch
+    const timestampUs = BigInt(Date.now()) * 1000n;
+    const clockId = BigInt(randomInt(1024));
+    const tid64 = (timestampUs << 10n) | clockId;
 
-    for (let i = 0; i < 10; i++) {
-        str = TID_ALPHABET[ts & 0x1f] + str;
-        ts = Math.floor(ts / 32);
+    let encoded = "";
+    let val = tid64;
+    for (let i = 0; i < 13; i++) {
+        encoded = TID_ALPHABET[Number(val & 0x1fn)] + encoded;
+        val >>= 5n;
     }
-
-    str += TID_ALPHABET[randomInt(32)];
-    str += TID_ALPHABET[randomInt(32)];
-    return str;
+    return encoded;
 }
 
 /* ── Artist parsing ────────────────────────────────────────────────── */

@@ -11,9 +11,9 @@ const {
 } = require("../src/teal-client");
 
 describe("generateTid", () => {
-    it("returns a 12-character string", () => {
+    it("returns a 13-character string", () => {
         const tid = generateTid();
-        assert.equal(tid.length, 12);
+        assert.equal(tid.length, 13);
     });
 
     it("uses only the AT Protocol base32 alphabet", () => {
