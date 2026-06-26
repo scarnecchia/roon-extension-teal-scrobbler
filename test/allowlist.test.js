@@ -40,6 +40,21 @@ describe("ZoneAllowlist", () => {
             assert.ok(al.isAllowed("z1", "Kitchen + Living Room"));
         });
 
+        it("matches by output_id from known zones", () => {
+            const al = new ZoneAllowlist({ allowedZoneIds: ["out-1"] });
+            const watcher = new EventEmitter();
+            al.attach(watcher);
+            watcher.emit("zone_added", {
+                zone: {
+                    zone_id: "z1",
+                    display_name: "NAD CS1",
+                    state: "stopped",
+                    outputs: [{ output_id: "out-1" }],
+                },
+            });
+            assert.ok(al.isAllowed("z1", "NAD CS1"));
+        });
+
         it("returns false for falsy zone_id", () => {
             const al = new ZoneAllowlist({ allowedZoneIds: ["z1"] });
             assert.ok(!al.isAllowed(null));
@@ -129,25 +144,26 @@ describe("ZoneAllowlist", () => {
     });
 
     describe("parseSettings", () => {
-        it("parses comma-separated zone IDs", () => {
+        it("parses comma-separated values as zone names", () => {
             const result = ZoneAllowlist.parseSettings({
-                allowed_zone_ids: "z1, z2, z3",
+                allowed_zone_ids: "Kitchen, Living Room",
             });
-            assert.deepEqual(result.allowedZoneIds.sort(), ["z1", "z2", "z3"]);
+            assert.deepEqual(result.allowedZoneNames.sort(), ["Kitchen", "Living Room"]);
         });
 
-        it("parses zone picker slots", () => {
+        it("parses zone picker objects with output_id and name", () => {
             const result = ZoneAllowlist.parseSettings({
                 allowed_zone_ids: "",
-                allow_zone_1: "z1",
-                allow_zone_2: "z2",
+                allow_zone_1: { output_id: "out-1", name: "NAD CS1" },
+                allow_zone_2: { output_id: "out-2", name: "Kitchen" },
             });
-            assert.deepEqual(result.allowedZoneIds.sort(), ["z1", "z2"]);
+            assert.deepEqual(result.allowedZoneIds.sort(), ["out-1", "out-2"]);
+            assert.deepEqual(result.allowedZoneNames.sort(), ["Kitchen", "NAD CS1"]);
         });
 
-        it("deduplicates across sources", () => {
+        it("parses zone picker string values as IDs", () => {
             const result = ZoneAllowlist.parseSettings({
-                allowed_zone_ids: "z1",
+                allowed_zone_ids: "",
                 allow_zone_1: "z1",
             });
             assert.deepEqual(result.allowedZoneIds, ["z1"]);
@@ -156,6 +172,7 @@ describe("ZoneAllowlist", () => {
         it("returns empty for no input", () => {
             const result = ZoneAllowlist.parseSettings({});
             assert.deepEqual(result.allowedZoneIds, []);
+            assert.deepEqual(result.allowedZoneNames, []);
         });
     });
 

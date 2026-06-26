@@ -109,12 +109,19 @@ class ZoneAllowlist extends EventEmitter {
 
         if (this._allowedIds.has(String(zone_id))) return true;
 
+        const zone = this._knownZones.get(zone_id);
+        if (zone && Array.isArray(zone.outputs)) {
+            for (const output of zone.outputs) {
+                if (output.output_id && this._allowedIds.has(String(output.output_id))) {
+                    return true;
+                }
+            }
+        }
+
         if (display_name != null) {
             const name = String(display_name).trim().toLowerCase();
             if (this._allowedNames.has(name)) return true;
 
-            // Also match the "first member" of a grouped name (e.g. "Kitchen + 2").
-            // If the user allowlisted "Kitchen", a grouped "Kitchen + 2" should count.
             const base = _extractBaseName(display_name);
             if (base && this._allowedNames.has(base)) return true;
         }
@@ -240,27 +247,29 @@ class ZoneAllowlist extends EventEmitter {
      */
     static parseSettings(values = {}) {
         const ids = new Set();
+        const names = new Set();
 
-        // Comma-separated string.
         const raw = values.allowed_zone_ids;
         if (typeof raw === "string") {
             for (const part of raw.split(",")) {
-                const id = part.trim();
-                if (id) ids.add(id);
+                const val = part.trim();
+                if (val) names.add(val);
             }
         }
 
-        // Per-slot zone pickers (value is a zone_id string).
         for (let i = 1; i <= NUM_ZONE_SLOTS; i++) {
             const v = values[`allow_zone_${i}`];
-            if (typeof v === "string" && v.trim()) {
+            if (v && typeof v === "object" && v.output_id) {
+                ids.add(v.output_id);
+                if (v.name) names.add(v.name);
+            } else if (typeof v === "string" && v.trim()) {
                 ids.add(v.trim());
             }
         }
 
         return {
             allowedZoneIds: Array.from(ids),
-            allowedZoneNames: [],
+            allowedZoneNames: Array.from(names),
         };
     }
 
