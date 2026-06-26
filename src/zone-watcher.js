@@ -33,18 +33,6 @@ class ZoneWatcher extends EventEmitter {
         const transport = core.services.RoonApiTransport;
 
         transport.subscribe_zones((response, msg) => {
-            if (response === "Changed") {
-                const keys = Object.keys(msg || {}).join(",");
-                const hasSeek = msg.zone_seek_changed ? msg.zone_seek_changed.length : 0;
-                const hasChanged = msg.zones_changed ? msg.zones_changed.length : 0;
-                console.log(`[watcher] Changed: keys=${keys} seek=${hasSeek} changed=${hasChanged}`);
-                if (msg.zones_changed) {
-                    for (const z of msg.zones_changed) {
-                        const sp = z.now_playing ? z.now_playing.seek_position : "no-np";
-                        console.log(`[watcher]   zone=${z.zone_id.slice(-8)} state=${z.state} seek=${sp}`);
-                    }
-                }
-            }
             switch (response) {
                 case "Subscribed":
                     this._onSubscribed(msg);
@@ -132,8 +120,8 @@ class ZoneWatcher extends EventEmitter {
         }
 
         // Zone seek-only updates (Roon batches frequent seek_position changes)
-        if (msg.zone_seek_changed) {
-            for (const entry of msg.zone_seek_changed) {
+        if (msg.zones_seek_changed) {
+            for (const entry of msg.zones_seek_changed) {
                 const zone = this._zones.get(entry.zone_id);
                 if (zone && zone.now_playing) {
                     const updated = {

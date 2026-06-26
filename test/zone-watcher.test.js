@@ -92,7 +92,7 @@ describe("ZoneWatcher", () => {
             assert.equal(trackEvent.zone.now_playing.three_line.line2, "T2");
         });
 
-        it("emits seek for zone_seek_changed without mutating the stored zone", () => {
+        it("emits seek for zones_seek_changed without mutating the stored zone", () => {
             const core = fakeCore((cb) => {
                 cb("Subscribed", {
                     zones: [{
@@ -101,7 +101,7 @@ describe("ZoneWatcher", () => {
                     }],
                 });
                 cb("Changed", {
-                    zone_seek_changed: [{ zone_id: "z1", seek_position: 42 }],
+                    zones_seek_changed: [{ zone_id: "z1", seek_position: 42 }],
                 });
             });
 

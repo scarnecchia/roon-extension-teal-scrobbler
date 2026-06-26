@@ -165,21 +165,7 @@ allowlist.attach(watcher);
 // ProgressTracker accumulates listened time and emits qualified_play.
 tracker.attach(watcher);
 
-// Zone events (NUM-11 deliverable — logging)
-let _seekCount = 0;
-watcher.on("seek", ({ zone_id, seek_position }) => {
-    _seekCount++;
-    if (_seekCount <= 5 || _seekCount % 50 === 0) {
-        const progress = tracker.getProgress(zone_id);
-        console.log(
-            `[debug] seek #${_seekCount} zone=${zone_id.slice(-8)} pos=${seek_position} ` +
-            `listened=${progress ? progress.listened_seconds.toFixed(1) : "?"} ` +
-            `threshold=${progress ? progress.threshold : "?"} ` +
-            `scrobbled=${progress ? progress.scrobbled : "?"}`
-        );
-    }
-});
-
+// Zone events
 watcher.on("subscribed", ({ zones }) => {
     console.log(`[zones] Subscribed — ${zones.length} zone(s) active`);
 });
