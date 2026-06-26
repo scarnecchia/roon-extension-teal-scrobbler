@@ -33,6 +33,7 @@ class ZoneWatcher extends EventEmitter {
         const transport = core.services.RoonApiTransport;
 
         transport.subscribe_zones((response, msg) => {
+            console.log(`[watcher] subscribe_zones callback: ${response}`);
             switch (response) {
                 case "Subscribed":
                     this._onSubscribed(msg);
