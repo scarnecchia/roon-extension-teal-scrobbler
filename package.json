@@ -1,0 +1,22 @@
+{
+  "name": "roon-extension-teal-scrobbler",
+  "version": "0.1.0",
+  "description": "Roon extension that scrobbles qualifying plays to teal.fm as fm.teal.alpha.feed.play records",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node --env-file-if-exists=.env src/index.js",
+    "test": "node --test test/*.test.js"
+  },
+  "author": "teal.fm",
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/scarnecchia/roon-extension-teal-scrobbler.git"
+  },
+  "dependencies": {
+    "node-roon-api": "github:roonlabs/node-roon-api",
+    "node-roon-api-transport": "github:roonlabs/node-roon-api-transport",
+    "node-roon-api-settings": "github:roonlabs/node-roon-api-settings",
+    "node-roon-api-status": "github:roonlabs/node-roon-api-status"
+  }
+}
